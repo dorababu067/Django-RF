@@ -6,47 +6,43 @@ from django.http import Http404
 
 from rest_framework import status
 from rest_framework.views import APIView
-
+from rest_framework import generics
+from rest_framework import mixins
 
 # Create your views here.
-class HomeView(APIView):
-    def get(self, request):
-        schools = School.objects.all()
-        serializer = SchoolSerializer(schools, many=True)
-        return JsonResponse(serializer.data, status=status.HTTP_200_OK, safe=False)
+class HomeView(mixins.ListModelMixin,
+            mixins.CreateModelMixin,
+            generics.GenericAPIView):
+    queryset = School.objects.all()
+    serializer_class = SchoolSerializer
 
-    def post(self, request):
-        serializer = SchoolSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
-        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
 
 
-class DetailView(APIView):
-    def get_object(self, pk):
-        try:
-            return School.objects.get(pk=pk)
-        except School.DoesNotExist:
-            raise Http404
+class DetailView(mixins.RetrieveModelMixin,
+                mixins.UpdateModelMixin,
+                mixins.DestroyModelMixin,
+                generics.GenericAPIView):
 
-    def get(self, request, pk):
-        school  = self.get_object(pk)
-        serializer = SchoolSerializer(school)
-        return JsonResponse(serializer.data, status=status.HTTP_200_OK)
+    queryset = School.objects.all()
+    serializer_class = SchoolSerializer
+  
 
-    def put(self, request, pk):
-        school = self.get_object(pk)
-        serializer = SchoolSerializer(school, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data)
-        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
 
-    def delete(self, request, pk):
-        school = self.get_object(pk)
-        school.delete()
-        return  HttpResponse('Object deleted')
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+    
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+    
+
+
 
 
 
