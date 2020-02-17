@@ -5,6 +5,6 @@ from . models import School
 class SchoolSerializer(serializers.ModelSerializer):
     class Meta:
         model = School
-        fields = ['name', 'location']
+        fields = ['id', 'name', 'location']
 
    
